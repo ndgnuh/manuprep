@@ -1,5 +1,5 @@
-name: submission_prep
-description: A sample command-line application.
+name: manuprep
+description: Prepare manuscripts for publication.
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 

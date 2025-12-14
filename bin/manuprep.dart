@@ -1,7 +1,6 @@
-// import 'package:submission_prep/submission_prep.dart' as submission_prep;
 import 'dart:io';
 
-import 'package:submission_prep/submission_prep.dart';
+import 'package:manuprep/manuprep.dart';
 import 'package:path/path.dart' as p;
 import 'package:args/args.dart';
 
