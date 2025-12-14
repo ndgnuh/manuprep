@@ -16,7 +16,6 @@ String? findFileWithBaseName({
   final pathName = p.join(sourceDirectory, sourceName);
   final dirName = p.dirname(pathName);
   for (final entry in Directory(dirName).listSync()) {
-    print(entry.path);
     if (entry.path.startsWith(pathName)) {
       return entry.path;
     }
@@ -140,7 +139,7 @@ DocumentNode prepareFromContent({
     outputFile.writeAsBytesSync(inputFile.readAsBytesSync());
 
     /// Show info about copied files
-    print("[INFO] Copy ${mapping.inputPath} -> ${mapping.outputPath}");
+    print("[INFO] ${mapping.inputPath} -> ${mapping.outputPath}");
   }
 
   /// Write entrypoint file
@@ -149,6 +148,7 @@ DocumentNode prepareFromContent({
     p.basename(entrypoint),
   );
   File(outputEntrypoint).writeAsStringSync(doc.compose());
+  print("[INFO] Written flatten entrypoint $outputEntrypoint");
 
   return doc;
 }

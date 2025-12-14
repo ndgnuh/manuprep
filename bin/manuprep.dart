@@ -2,46 +2,45 @@ import 'dart:io';
 
 import 'package:manuprep/manuprep.dart';
 import 'package:path/path.dart' as p;
-import 'package:args/args.dart';
+
+void showHelp({int? exitCode, String? message}) {
+  if (message != null) {
+    print("ERROR");
+    print("\t$message");
+    print("");
+  }
+  print("INFO");
+  print("\tFlatten directory structure of LaTeX project for paper submission.");
+  print("");
+  print("USAGE");
+  print("\tmanuprep <path/to/input.tex> <path/to/output_directory>");
+  if (exitCode != null) exit(exitCode);
+}
 
 void main(List<String> arguments) {
-  final parser = ArgParser();
-  parser.addSeparator(
-    'Flatten directory structure of LaTeX project for paper submission',
-  );
+  if (arguments.contains('-h') || arguments.contains('--help')) {
+    showHelp(exitCode: 0);
+  }
 
-  parser.addSeparator(
-    'Usage:',
-  );
-  parser.addOption(
-    'input',
-    abbr: 'i',
-    help: 'Input LaTeX file path',
-    callback: (String? input) {
-      if (input == null) {
-        print("[WARNING] Input file is required.\n");
-        print(parser.usage);
-        exit(2);
-      }
-    },
-  );
+  if (arguments.length < 2) {
+    showHelp(exitCode: 2, message: "Not enough arguments provided.");
+  }
 
-  parser.addOption(
-    'output',
-    abbr: 'o',
-    help: 'Output directory path',
-    callback: (String? output) {
-      if (output == null) {
-        print("[WARNING] Output directory is required.\n");
-        print(parser.usage);
-        exit(2);
-      }
-    },
-  );
+  if (arguments.length > 2) {
+    print(
+      "Extra arguments provided, ignoring: ${arguments.sublist(2).join(', ')}",
+    );
+  }
 
-  final parsedArgs = parser.parse(arguments);
-  final inputPath = parsedArgs['input'] as String;
-  final outputDirectory = parsedArgs['output'] as String;
+  final inputPath = arguments[0];
+  final outputDirectory = arguments[1];
+
+  if (!File(inputPath).existsSync()) {
+    print("ERROR");
+    print("");
+    print("\tInput file '$inputPath' does not exist.");
+    exit(3);
+  }
 
   final entrypoint = p.basename(inputPath);
   final inputDirectory = p.dirname(inputPath);
