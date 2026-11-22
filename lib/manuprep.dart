@@ -6,6 +6,7 @@ export 'parser.dart';
 
 /// Find a file in [sourceDirectory] that starts with [sourceName].
 /// Returns the full path to the file if found, otherwise returns null.
+/// The returned path is related to the current working directory of the script.
 ///
 /// In LaTeX, includegraphics accept files without extension
 /// so this function helps to find the actual file.
@@ -26,6 +27,20 @@ String? findFileWithBaseName({
   return null;
 }
 
+class WorkingContext {
+  final String entrypoint;
+  final String sourceDirectory;
+  final String outputDirectory;
+  final List<ResourceMap> resourceMaps;
+
+  const WorkingContext({
+    required this.entrypoint,
+    required this.sourceDirectory,
+    required this.outputDirectory,
+    required this.resourceMaps,
+  });
+}
+
 class ResourceMap {
   final PathNode node;
   final String inputDirectory;
@@ -44,7 +59,7 @@ class ResourceMap {
     final extension = p.extension(outputPath);
     final newOutputPath = p.join(
       p.dirname(outputPath),
-      '$baseName\_$index$extension',
+      '${baseName}_$index$extension',
     );
     return ResourceMap(
       node: node,
