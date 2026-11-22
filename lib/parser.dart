@@ -7,6 +7,14 @@ import 'types/ast.dart';
 
 import 'tokenize.dart';
 
+FreeText _mergeFreeText(FreeText text1, FreeText text2) {
+  return FreeText(text1.text + text2.text);
+}
+
+DocumentNode parseTokenList(List<Token> tokens) {
+  return DocumentParser(tokens).parse();
+}
+
 class DocumentParser {
   final List<Token> tokens;
   DocumentParser(this.tokens);
@@ -22,6 +30,7 @@ class DocumentParser {
   DocumentNode parse() {
     position = 0;
     final children = <AstNode>[];
+    AstNode? previousNode;
     while (notEof) {
       final token = advance();
       if (token.type == TokenType.eof) {
@@ -29,37 +38,42 @@ class DocumentParser {
       }
       final parsed = parseFromToken(token);
 
-      children.add(parsed);
+      switch ((previousNode, parsed)) {
+        case (FreeText prev, FreeText next):
+          children.last = _mergeFreeText(prev, next);
+        default:
+          children.add(parsed);
+      }
+      previousNode = parsed;
     }
     return DocumentNode(children: children);
   }
 
   /// The main hub of token handling
   /// Route each token type to appropriate parsing function
-  AstNode parseFromToken(Token token, {AstNode? parent}) {
+  AstNode parseFromToken(Token token) {
     switch (token.type) {
       case TokenType.macro:
         return switch (token.value) {
-          r"\bibliography" => parseBibliographyCommand(parent: parent),
-          r"\includegraphics" => parseIncludeGraphicsCommand(parent: parent),
-          r"\input" => parseInputNode(parent: parent),
+          r"\bibliography" => parseBibliographyCommand(),
+          r"\includegraphics" => parseIncludeGraphicsCommand(),
+          r"\input" => parseInputNode(),
           r"\usepackage" => parseOtherMacro(
             name: token.value,
             argSpec: "om",
-            parent: parent,
           ),
-          _ => parseOtherMacro(name: token.value, parent: parent),
+          _ => FreeText(token.value),
         };
       case TokenType.groupBegin:
-        return parseBlock(optional: false, parent: parent);
+        return parseBlock(optional: false);
       case TokenType.optionBegin:
-        return parseBlock(optional: true, parent: parent);
+        return parseBlock(optional: true);
       case TokenType.other:
-        return FreeText(token.value, parent: parent);
+        return FreeText(token.value);
       case TokenType.eof:
         throw Exception('Unexpected end of file');
       case TokenType.blockCommentBegin:
-        return parseCommentEnvironment(parent: parent);
+        return parseCommentEnvironment();
       default:
         throw unexpect(token);
     }
@@ -103,13 +117,10 @@ class DocumentParser {
         .map((e) => texCompose(astNode: e))
         .join()
         .trim();
-    return InputNode(
-      path: path,
-      parent: parent,
-    );
+    return InputNode(path: path);
   }
 
-  AstNode parseFreeText({AstNode? parent}) {
+  AstNode parseFreeText() {
     final buffer = StringBuffer();
 
     while (notEof) {
@@ -122,18 +133,18 @@ class DocumentParser {
       }
     }
 
-    return FreeText(buffer.toString(), parent: parent);
+    return FreeText(buffer.toString());
   }
 
-  AstNode parseBlock({bool optional = false, AstNode? parent}) {
+  GroupNode parseBlock({bool optional = false}) {
     final children = <AstNode>[];
     while (notEof) {
       final token = advance();
       switch ((token.type, optional)) {
         case (TokenType.groupEnd, false):
-          return GroupNode(children: children, parent: parent);
+          return GroupNode(children: children);
         case (TokenType.optionEnd, true):
-          return OptionNode(children: children, parent: parent);
+          return GroupNode(children: children, isOption: true);
         case (TokenType.eof, _):
           throw Exception('Unexpected end of file while parsing block');
         default:
@@ -143,7 +154,7 @@ class DocumentParser {
     throw Exception('Unclosed block');
   }
 
-  BibliographyNode parseBibliographyCommand({AstNode? parent}) {
+  BibliographyNode parseBibliographyCommand() {
     // Expecting \bibliography{source1,source2,...}
     // Consume the '{'
     expect(TokenType.groupBegin);
@@ -165,13 +176,13 @@ class DocumentParser {
       for (final child in children) texCompose(astNode: child),
     ].join();
     final bibSources = sources.split(',').toList();
-    return BibliographyNode(sources: bibSources, parent: parent);
+    return BibliographyNode(sources: bibSources);
   }
 
   IncludeGraphicsNode parseIncludeGraphicsCommand({AstNode? parent}) {
     // Check if the next token is an optional argument
     final currentToken = peek();
-    late final AstNode? options;
+    late final GroupNode? options;
     if (currentToken.type == TokenType.optionBegin) {
       advance(); // Consume '['
       options = parseBlock(optional: true);
@@ -189,7 +200,6 @@ class DocumentParser {
     return IncludeGraphicsNode(
       path: blockContent,
       options: options,
-      parent: parent,
     );
   }
 
@@ -198,7 +208,7 @@ class DocumentParser {
     while (notEof) {
       final token = advance();
       if (token.type == TokenType.blockCommentEnd) {
-        return BlockCommentNode(content: buffer.toString(), parent: parent);
+        return BlockCommentNode(content: buffer.toString());
       } else {
         buffer.write(token.value);
       }
@@ -206,7 +216,7 @@ class DocumentParser {
     throw Exception('Unclosed comment environment');
   }
 
-  MacroNode parseOtherMacro({
+  OtherMacroNode parseOtherMacro({
     required String name,
     String argSpec = "",
     AstNode? parent,
@@ -235,7 +245,7 @@ class DocumentParser {
       }
     }
 
-    return OtherMacroNode(name: name, children: args, parent: parent);
+    return OtherMacroNode(name: name, children: args);
   }
 }
 
