@@ -3,6 +3,8 @@
 /// relative to the root directory
 library;
 
+part 'ast.copy.dart';
+
 /// Node can have content only (no chidren)
 /// multiple children (blocks, bib commands)
 /// and single children (path node, input, etc)
@@ -130,14 +132,6 @@ class IncludeGraphicsNode extends MacroNode {
   final AstNode? options;
   IncludeGraphicsNode({required this.path, this.options, super.parent})
     : super(name: r'\includegraphics');
-
-  IncludeGraphicsNode copyWith({
-    String? path,
-    AstNode? options,
-  }) => IncludeGraphicsNode(
-    path: path ?? this.path,
-    options: options ?? this.options,
-  );
 
   @override
   String toString() => 'IncludeGraphicsNode(path: $path, options: $options)';
