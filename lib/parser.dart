@@ -42,7 +42,7 @@ class DocumentParser {
     throw Exception('Unexpected token of type ${token.type}}');
   }
 
-  InputNode parseInputNode({Node? parent}) {
+  InputNode parseInputNode({AstNode? parent}) {
     // Expecting \input{path}
     expect(TokenType.groupBegin);
     final block = parseBlock(optional: false);
@@ -53,7 +53,7 @@ class DocumentParser {
     );
   }
 
-  Node parseFreeText({Node? parent}) {
+  AstNode parseFreeText({AstNode? parent}) {
     final buffer = StringBuffer();
 
     while (notEof) {
@@ -69,8 +69,8 @@ class DocumentParser {
     return FreeText(buffer.toString(), parent: parent);
   }
 
-  Node parseBlock({bool optional = false, Node? parent}) {
-    final children = <Node>[];
+  AstNode parseBlock({bool optional = false, AstNode? parent}) {
+    final children = <AstNode>[];
     while (notEof) {
       final token = advance();
       switch ((token.type, optional)) {
@@ -87,13 +87,13 @@ class DocumentParser {
     throw Exception('Unclosed block');
   }
 
-  BibliographyNode parseBibliographyCommand({Node? parent}) {
+  BibliographyNode parseBibliographyCommand({AstNode? parent}) {
     // Expecting \bibliography{source1,source2,...}
     // Consume the '{'
     expect(TokenType.groupBegin);
 
     // Split the argument by commas and trim spaces
-    final children = <Node>[];
+    final children = <AstNode>[];
     loop:
     while (notEof) {
       final token = advance();
@@ -113,10 +113,10 @@ class DocumentParser {
     return BibliographyNode(sources: bibSources, parent: parent);
   }
 
-  IncludeGraphicsNode parseIncludeGraphicsCommand({Node? parent}) {
+  IncludeGraphicsNode parseIncludeGraphicsCommand({AstNode? parent}) {
     // Check if the next token is an optional argument
     final currentToken = peek();
-    late final Node? options;
+    late final AstNode? options;
     if (currentToken.type == TokenType.optionBegin) {
       advance(); // Consume '['
       options = parseBlock(optional: true);
@@ -136,7 +136,7 @@ class DocumentParser {
     );
   }
 
-  BlockCommentNode parseCommentEnvironment({Node? parent}) {
+  BlockCommentNode parseCommentEnvironment({AstNode? parent}) {
     final buffer = StringBuffer();
     while (notEof) {
       final token = advance();
@@ -152,10 +152,10 @@ class DocumentParser {
   MacroNode parseOtherMacro({
     required String name,
     String argSpec = "",
-    Node? parent,
+    AstNode? parent,
   }) {
     /// Macro name is current token value
-    final args = <Node>[];
+    final args = <AstNode>[];
     loop:
     for (var i = 0; i < argSpec.length; i++) {
       final spec = argSpec[i];
@@ -181,7 +181,7 @@ class DocumentParser {
     return OtherMacroNode(name: name, children: args, parent: parent);
   }
 
-  Node parseFromToken(Token token, {Node? parent}) {
+  AstNode parseFromToken(Token token, {AstNode? parent}) {
     switch (token.type) {
       case TokenType.macro:
         return switch (token.value) {
@@ -212,7 +212,7 @@ class DocumentParser {
 
   DocumentNode parse() {
     position = 0;
-    final children = <Node>[];
+    final children = <AstNode>[];
     while (notEof) {
       final token = advance();
       if (token.type == TokenType.eof) {

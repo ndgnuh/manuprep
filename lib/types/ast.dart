@@ -1,19 +1,26 @@
 /// Hold document nodes with meaningful contents (that we care about)
 library;
 
-sealed class Node {
-  final List<Node> children;
-  final Node? parent;
-  Node({this.children = const [], this.parent});
+/// Node can have content only (no chidren)
+/// multiple children (blocks, bib commands)
+/// and single children (path node, input, etc)
+enum AstNodeChildrenType {
+  none,
+  single,
+  multiple,
+}
 
-  void traverse(void Function(Node node) visitor) {
+sealed class AstNode {
+  final List<AstNode> children;
+  final AstNode? parent;
+  AstNode({this.children = const [], this.parent});
+
+  void traverse(void Function(AstNode node) visitor) {
     visitor(this);
     for (final child in children) {
       child.traverse(visitor);
     }
   }
-
-  String compose();
 
   Map<String, Object> toJson() {
     return {
@@ -23,12 +30,9 @@ sealed class Node {
   }
 }
 
-class FreeText extends Node {
+class FreeText extends AstNode {
   final String text;
   FreeText(this.text, {super.parent});
-
-  @override
-  String compose() => text;
 
   @override
   String toString() => 'FreeText("$text")';
@@ -40,11 +44,8 @@ class FreeText extends Node {
   };
 }
 
-class GroupNode extends Node {
+class GroupNode extends AstNode {
   GroupNode({required super.children, super.parent});
-
-  @override
-  String compose() => '{${children.map((e) => e.compose()).join()}}';
 
   @override
   String toString() => 'GroupNode(${children.length} children)';
@@ -56,11 +57,8 @@ class GroupNode extends Node {
   };
 }
 
-class OptionNode extends Node {
+class OptionNode extends AstNode {
   OptionNode({required super.children, super.parent});
-
-  @override
-  String compose() => '[${children.map((e) => e.compose()).join()}]';
 
   @override
   Map<String, Object> toJson() => {
@@ -69,7 +67,7 @@ class OptionNode extends Node {
   };
 }
 
-sealed class MacroNode extends Node {
+sealed class MacroNode extends AstNode {
   final String name;
 
   MacroNode({required this.name, super.children, super.parent});
@@ -77,15 +75,6 @@ sealed class MacroNode extends Node {
 
 class OtherMacroNode extends MacroNode {
   OtherMacroNode({required super.name, super.children, super.parent});
-
-  @override
-  String compose() {
-    final parts = [
-      name,
-      ...children.map((child) => child.compose()),
-    ];
-    return parts.join();
-  }
 
   @override
   Map<String, Object> toJson() {
@@ -102,25 +91,19 @@ class InputNode extends OtherMacroNode {
   InputNode({required this.path, super.parent}) : super(name: r'\input');
 
   @override
-  List<Node> get children => [path];
-
-  @override
-  String compose() => '\\input{${path.compose()}}';
+  List<AstNode> get children => [path];
 
   @override
   String toString() => 'InputNode(path: $path)';
 }
 
-class PathNode extends Node {
+class PathNode extends AstNode {
   String path;
   PathNode({required this.path, super.parent});
 
   void replacePath(String newPath) {
     path = newPath;
   }
-
-  @override
-  String compose() => path;
 
   @override
   String toString() => 'PathNode(path: $path)';
@@ -132,12 +115,9 @@ class PathNode extends Node {
   };
 }
 
-class BlockCommentNode extends Node {
+class BlockCommentNode extends AstNode {
   final String content;
   BlockCommentNode({required this.content, super.parent});
-
-  @override
-  String compose() => r"\begin{comment}" + content + r"\end{comment}";
 
   @override
   String toString() => 'BlockCommentNode()';
@@ -155,16 +135,10 @@ class BibliographyNode extends MacroNode {
     : super(name: r'\bibliography');
 
   @override
-  List<Node> get children => sources;
+  List<AstNode> get children => sources;
 
   @override
   String toString() => 'BibliographyNode(sources: $sources)';
-
-  @override
-  String compose() {
-    final paths = sources.map((e) => e.compose()).join(',');
-    return '\\bibliography{$paths}';
-  }
 
   @override
   Map<String, Object> toJson() => {
@@ -175,35 +149,23 @@ class BibliographyNode extends MacroNode {
 
 class IncludeGraphicsNode extends MacroNode {
   final PathNode path;
-  final Node? options;
+  final AstNode? options;
   IncludeGraphicsNode({required this.path, this.options, super.parent})
     : super(name: r'\includegraphics');
 
   @override
-  List<Node> get children => [
+  List<AstNode> get children => [
     if (options != null) options!,
     path,
   ];
 
   IncludeGraphicsNode copyWith({
     PathNode? path,
-    Node? options,
+    AstNode? options,
   }) => IncludeGraphicsNode(
     path: path ?? this.path,
     options: options ?? this.options,
   );
-
-  @override
-  String compose() {
-    final parts = [
-      r"\includegraphics",
-      if (options != null) options!.compose(),
-      "{",
-      path.compose(),
-      "}",
-    ];
-    return parts.join();
-  }
 
   @override
   String toString() => 'IncludeGraphicsNode(path: $path, options: $options)';
@@ -216,11 +178,19 @@ class IncludeGraphicsNode extends MacroNode {
   };
 }
 
-class DocumentNode extends Node {
+class DocumentNode extends AstNode {
   DocumentNode({super.children});
+}
 
-  @override
-  String compose() {
-    return children.map((e) => e.compose()).join();
-  }
+AstNodeChildrenType getChildrenType<T extends AstNode>(T node) {
+  return switch (node) {
+    FreeText() || PathNode() || BlockCommentNode() => AstNodeChildrenType.none,
+    // InputNode extends OtherMacroNode, so it must come first
+    InputNode() || IncludeGraphicsNode() => AstNodeChildrenType.single,
+    GroupNode() ||
+    OptionNode() ||
+    OtherMacroNode() ||
+    BibliographyNode() ||
+    DocumentNode() => AstNodeChildrenType.multiple,
+  };
 }
