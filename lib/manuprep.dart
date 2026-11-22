@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'compose.dart';
 import 'parser.dart';
+import 'types/ast.dart';
 export 'parser.dart';
 
 /// Find a file in [sourceDirectory] that starts with [sourceName].
@@ -162,7 +164,7 @@ DocumentNode prepareFromContent({
     outputDirectory,
     p.basename(entrypoint),
   );
-  File(outputEntrypoint).writeAsStringSync(doc.compose());
+  File(outputEntrypoint).writeAsStringSync(texCompose(astNode: doc));
   print("[INFO] Written flatten entrypoint $outputEntrypoint");
 
   return doc;

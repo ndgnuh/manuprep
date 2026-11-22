@@ -1,6 +1,7 @@
 /// From tokens -> AST
 library;
 
+import 'compose.dart';
 import 'types/token.dart';
 import 'types/ast.dart';
 
@@ -46,7 +47,10 @@ class DocumentParser {
     // Expecting \input{path}
     expect(TokenType.groupBegin);
     final block = parseBlock(optional: false);
-    final path = block.children.map((e) => e.compose()).join().trim();
+    final path = block.children
+        .map((e) => texCompose(astNode: e))
+        .join()
+        .trim();
     return InputNode(
       path: PathNode(path: path),
       parent: parent,
@@ -105,7 +109,9 @@ class DocumentParser {
           children.add(args);
       }
     }
-    final sources = [for (final child in children) child.compose()].join();
+    final sources = [
+      for (final child in children) texCompose(astNode: child),
+    ].join();
     final bibSources = sources
         .split(',')
         .map((path) => PathNode(path: path))
@@ -128,7 +134,9 @@ class DocumentParser {
 
     // Expecting \includegraphics{path}
     final graphicPath = parseBlock(optional: false);
-    final blockContent = graphicPath.children.map((e) => e.compose()).join();
+    final blockContent = graphicPath.children
+        .map((e) => texCompose(astNode: e))
+        .join();
     return IncludeGraphicsNode(
       path: PathNode(path: blockContent),
       options: options,

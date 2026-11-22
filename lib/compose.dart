@@ -1,8 +1,8 @@
 import 'types/ast.dart';
 
-String texCompose({required DocumentNode documentNode}) {
+String texCompose({required AstNode astNode}) {
   final io = StringBuffer();
-  texComposeVisit(io: io, node: documentNode);
+  texComposeVisit(io: io, node: astNode);
   return io.toString();
 }
 
