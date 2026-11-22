@@ -58,9 +58,10 @@ sealed class AstNode with _$AstNode {
 
   /// comment environment, they might contains \input and \includegraphics
   /// but they shouldn't be included in the final outputs
-  const factory AstNode.blockComment({
+  const factory AstNode.comment({
     required String content,
-  }) = BlockCommentNode;
+    required bool inline,
+  }) = CommentNode;
 
   /// bibliography command, track bib files
   const factory AstNode.bibliography({
@@ -85,7 +86,7 @@ sealed class AstNode with _$AstNode {
       /// Leaf nodes
       FreeText() ||
       InputNode() ||
-      BlockCommentNode() ||
+      CommentNode() ||
       BibliographyNode() => transformFunc(this),
 
       /// Branch nodes

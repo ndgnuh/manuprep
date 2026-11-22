@@ -1,6 +1,8 @@
 /// From tokens -> AST
 library;
 
+import 'package:source_span/source_span.dart';
+
 import 'compose.dart';
 import 'types/token.dart';
 import 'types/ast.dart';
@@ -11,13 +13,22 @@ FreeText _mergeFreeText(FreeText text1, FreeText text2) {
   return FreeText(text1.text + text2.text);
 }
 
-DocumentNode parseTokenList(List<Token> tokens) {
-  return DocumentParser(tokens).parse();
+DocumentNode parseTokenList(List<Token> tokens, {SourceFile? file}) {
+  return DocumentParser(tokens, file: file).parse();
 }
 
 class DocumentParser {
   final List<Token> tokens;
-  DocumentParser(this.tokens);
+
+  /// Source the [tokens] came from, used to point at errors.
+  /// Without it, errors carry no location.
+  final SourceFile? file;
+
+  DocumentParser(this.tokens, {this.file});
+
+  /// The source region covered by [token], if [file] is known.
+  FileSpan? spanOf(Token token) =>
+      file?.span(token.start, token.start + token.length);
 
   /// Position of current token
   int position = 0;
@@ -64,18 +75,21 @@ class DocumentParser {
           ),
           _ => FreeText(token.value),
         };
-      case TokenType.groupBegin:
-        return parseBlock(optional: false);
-      case TokenType.optionBegin:
-        return parseBlock(optional: true);
-      case TokenType.other:
-        return FreeText(token.value);
       case TokenType.eof:
         throw Exception('Unexpected end of file');
       case TokenType.blockCommentBegin:
-        return parseCommentEnvironment();
-      default:
+        return parseBlockComment();
+      case TokenType.blockCommentEnd:
         throw unexpect(token);
+      case TokenType.percent:
+        return parseInlineComment();
+      case TokenType.other ||
+          TokenType.newLine ||
+          TokenType.optionBegin ||
+          TokenType.optionEnd ||
+          TokenType.groupBegin ||
+          TokenType.groupEnd:
+        return FreeText(token.value);
     }
   }
 
@@ -100,7 +114,11 @@ class DocumentParser {
   Token expect(TokenType type) {
     final token = advance();
     if (token.type != type) {
-      throw Exception('Expected token of type $type, got ${token.type}');
+      final message = 'Expected token of type $type, got ${token.type}';
+      final span = spanOf(token);
+      throw span == null
+          ? FormatException(message)
+          : SourceSpanFormatException(message, span);
     }
     return token;
   }
@@ -203,17 +221,33 @@ class DocumentParser {
     );
   }
 
-  BlockCommentNode parseCommentEnvironment({AstNode? parent}) {
+  CommentNode parseBlockComment() {
     final buffer = StringBuffer();
     while (notEof) {
       final token = advance();
       if (token.type == TokenType.blockCommentEnd) {
-        return BlockCommentNode(content: buffer.toString());
+        return CommentNode(content: buffer.toString(), inline: false);
       } else {
         buffer.write(token.value);
       }
     }
     throw Exception('Unclosed comment environment');
+  }
+
+  CommentNode parseInlineComment() {
+    final buffer = StringBuffer();
+    while (notEof) {
+      final token = advance();
+      print(token);
+      if (token.type == TokenType.newLine || token.type == TokenType.eof) {
+        print("<comments>${buffer.toString()}");
+        print("</comments>");
+        return CommentNode(content: buffer.toString(), inline: true);
+      } else {
+        buffer.write(token.value);
+      }
+    }
+    return CommentNode(content: buffer.toString(), inline: true);
   }
 
   OtherMacroNode parseOtherMacro({
@@ -249,8 +283,10 @@ class DocumentParser {
   }
 }
 
-DocumentNode parseDocument({required String source}) {
+/// [url] (a file path or [Uri]) is shown in error messages.
+DocumentNode parseDocument({required String source, Object? url}) {
   final tokens = tokenize(source);
-  final parser = DocumentParser(tokens);
+  final file = SourceFile.fromString(source, url: url);
+  final parser = DocumentParser(tokens, file: file);
   return parser.parse();
 }

@@ -35,10 +35,14 @@ void _texComposeVisit({
       io.write(open);
       visitAll(children);
       io.write(close);
-    case BlockCommentNode(:final content):
-      io.write(r'\begin{comment}');
+    case CommentNode(:final content, :final inline):
+      if (inline) {
+        io.write(r'% ');
+      } else {
+        io.write(r'\begin{comment}');
+      }
       io.write(content);
-      io.write(r'\end{comment}');
+      if (!inline) io.write(r'\end{comment}');
     // InputNode extends OtherMacroNode, so it must come first
     case InputNode(:final path):
       io.write(r'\input{');
@@ -104,7 +108,7 @@ void _dumpComposeVisit({
           ('children', children),
           ('isOption', isOption),
         ],
-        BlockCommentNode(:final content) => [('content', content)],
+        CommentNode(:final content) => [('content', content)],
         InputNode(:final path) => [('path', path)],
         OtherMacroNode(:final name, :final children) => [
           ('name', name),

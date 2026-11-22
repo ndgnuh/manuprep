@@ -5,6 +5,8 @@ enum TokenType {
   macro,
   blockCommentBegin,
   blockCommentEnd,
+  percent,
+  newLine,
   groupBegin,
   groupEnd,
   optionBegin,

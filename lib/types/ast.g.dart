@@ -52,14 +52,18 @@ Map<String, dynamic> _$InputNodeToJson(InputNode instance) => <String, dynamic>{
   'type': instance.$type,
 };
 
-BlockCommentNode _$BlockCommentNodeFromJson(Map<String, dynamic> json) =>
-    BlockCommentNode(
-      content: json['content'] as String,
-      $type: json['type'] as String?,
-    );
+CommentNode _$CommentNodeFromJson(Map<String, dynamic> json) => CommentNode(
+  content: json['content'] as String,
+  inline: json['inline'] as bool,
+  $type: json['type'] as String?,
+);
 
-Map<String, dynamic> _$BlockCommentNodeToJson(BlockCommentNode instance) =>
-    <String, dynamic>{'content': instance.content, 'type': instance.$type};
+Map<String, dynamic> _$CommentNodeToJson(CommentNode instance) =>
+    <String, dynamic>{
+      'content': instance.content,
+      'inline': instance.inline,
+      'type': instance.$type,
+    };
 
 BibliographyNode _$BibliographyNodeFromJson(Map<String, dynamic> json) =>
     BibliographyNode(

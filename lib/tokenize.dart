@@ -3,6 +3,17 @@ library;
 
 import 'types/token.dart';
 
+/// Characters that always form a token on their own.
+/// They also end a run of plain text.
+const _singleCharTokens = <String, TokenType>{
+  '{': TokenType.groupBegin,
+  '}': TokenType.groupEnd,
+  '[': TokenType.optionBegin,
+  ']': TokenType.optionEnd,
+  '%': TokenType.percent,
+  '\n': TokenType.newLine,
+};
+
 /// Tokenize [source] latex into [List<Token>].
 List<Token> tokenize(String source) {
   final tknz = Tokenizer(source);
@@ -67,6 +78,14 @@ class Tokenizer {
     final c = advance();
     final beginComment = "begin{comment}";
     final endComment = "end{comment}";
+
+    /// Not really the intended place to put this
+    /// If \ becomes a single token, then this should be placed
+    /// down below the command...
+    if (_singleCharTokens[c] case final type?) {
+      return Token(start: initPosition, type: type, value: c);
+    }
+
     switch (c) {
       case '':
         return Token(type: TokenType.eof, value: '', start: _position);
@@ -105,27 +124,11 @@ class Tokenizer {
           type: TokenType.macro,
           value: command,
         );
-      case '{':
-        return Token(start: initPosition, type: TokenType.groupBegin, value: c);
-      case '}':
-        return Token(start: initPosition, type: TokenType.groupEnd, value: c);
-      case '[':
-        return Token(
-          start: initPosition,
-          type: TokenType.optionBegin,
-          value: c,
-        );
-      case ']':
-        return Token(start: initPosition, type: TokenType.optionEnd, value: c);
       default:
         StringBuffer buffer = StringBuffer()..write(c);
         while (notEof) {
           final nextChar = currentChar;
-          if (nextChar == '\\' ||
-              nextChar == '{' ||
-              nextChar == '}' ||
-              nextChar == '[' ||
-              nextChar == ']') {
+          if (nextChar == '\\' || _singleCharTokens.containsKey(nextChar)) {
             break;
           }
           buffer.write(advance());

@@ -32,8 +32,8 @@ AstNode _$AstNodeFromJson(
           return InputNode.fromJson(
             json
           );
-                case 'blockComment':
-          return BlockCommentNode.fromJson(
+                case 'comment':
+          return CommentNode.fromJson(
             json
           );
                 case 'bibliography':
@@ -106,15 +106,15 @@ extension AstNodePatterns on AstNode {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( FreeText value)?  freeText,TResult Function( GroupNode value)?  group,TResult Function( OtherMacroNode value)?  otherMacro,TResult Function( InputNode value)?  input,TResult Function( BlockCommentNode value)?  blockComment,TResult Function( BibliographyNode value)?  bibliography,TResult Function( IncludeGraphicsNode value)?  includeGraphics,TResult Function( DocumentNode value)?  document,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( FreeText value)?  freeText,TResult Function( GroupNode value)?  group,TResult Function( OtherMacroNode value)?  otherMacro,TResult Function( InputNode value)?  input,TResult Function( CommentNode value)?  comment,TResult Function( BibliographyNode value)?  bibliography,TResult Function( IncludeGraphicsNode value)?  includeGraphics,TResult Function( DocumentNode value)?  document,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case FreeText() when freeText != null:
 return freeText(_that);case GroupNode() when group != null:
 return group(_that);case OtherMacroNode() when otherMacro != null:
 return otherMacro(_that);case InputNode() when input != null:
-return input(_that);case BlockCommentNode() when blockComment != null:
-return blockComment(_that);case BibliographyNode() when bibliography != null:
+return input(_that);case CommentNode() when comment != null:
+return comment(_that);case BibliographyNode() when bibliography != null:
 return bibliography(_that);case IncludeGraphicsNode() when includeGraphics != null:
 return includeGraphics(_that);case DocumentNode() when document != null:
 return document(_that);case _:
@@ -135,15 +135,15 @@ return document(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( FreeText value)  freeText,required TResult Function( GroupNode value)  group,required TResult Function( OtherMacroNode value)  otherMacro,required TResult Function( InputNode value)  input,required TResult Function( BlockCommentNode value)  blockComment,required TResult Function( BibliographyNode value)  bibliography,required TResult Function( IncludeGraphicsNode value)  includeGraphics,required TResult Function( DocumentNode value)  document,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( FreeText value)  freeText,required TResult Function( GroupNode value)  group,required TResult Function( OtherMacroNode value)  otherMacro,required TResult Function( InputNode value)  input,required TResult Function( CommentNode value)  comment,required TResult Function( BibliographyNode value)  bibliography,required TResult Function( IncludeGraphicsNode value)  includeGraphics,required TResult Function( DocumentNode value)  document,}){
 final _that = this;
 switch (_that) {
 case FreeText():
 return freeText(_that);case GroupNode():
 return group(_that);case OtherMacroNode():
 return otherMacro(_that);case InputNode():
-return input(_that);case BlockCommentNode():
-return blockComment(_that);case BibliographyNode():
+return input(_that);case CommentNode():
+return comment(_that);case BibliographyNode():
 return bibliography(_that);case IncludeGraphicsNode():
 return includeGraphics(_that);case DocumentNode():
 return document(_that);}
@@ -160,15 +160,15 @@ return document(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( FreeText value)?  freeText,TResult? Function( GroupNode value)?  group,TResult? Function( OtherMacroNode value)?  otherMacro,TResult? Function( InputNode value)?  input,TResult? Function( BlockCommentNode value)?  blockComment,TResult? Function( BibliographyNode value)?  bibliography,TResult? Function( IncludeGraphicsNode value)?  includeGraphics,TResult? Function( DocumentNode value)?  document,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( FreeText value)?  freeText,TResult? Function( GroupNode value)?  group,TResult? Function( OtherMacroNode value)?  otherMacro,TResult? Function( InputNode value)?  input,TResult? Function( CommentNode value)?  comment,TResult? Function( BibliographyNode value)?  bibliography,TResult? Function( IncludeGraphicsNode value)?  includeGraphics,TResult? Function( DocumentNode value)?  document,}){
 final _that = this;
 switch (_that) {
 case FreeText() when freeText != null:
 return freeText(_that);case GroupNode() when group != null:
 return group(_that);case OtherMacroNode() when otherMacro != null:
 return otherMacro(_that);case InputNode() when input != null:
-return input(_that);case BlockCommentNode() when blockComment != null:
-return blockComment(_that);case BibliographyNode() when bibliography != null:
+return input(_that);case CommentNode() when comment != null:
+return comment(_that);case BibliographyNode() when bibliography != null:
 return bibliography(_that);case IncludeGraphicsNode() when includeGraphics != null:
 return includeGraphics(_that);case DocumentNode() when document != null:
 return document(_that);case _:
@@ -188,14 +188,14 @@ return document(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String text)?  freeText,TResult Function( List<AstNode> children,  bool isOption)?  group,TResult Function( String name,  List<AstNode> children)?  otherMacro,TResult Function( String path)?  input,TResult Function( String content)?  blockComment,TResult Function( List<String> sources)?  bibliography,TResult Function( String path,  GroupNode? options)?  includeGraphics,TResult Function( List<AstNode> children)?  document,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String text)?  freeText,TResult Function( List<AstNode> children,  bool isOption)?  group,TResult Function( String name,  List<AstNode> children)?  otherMacro,TResult Function( String path)?  input,TResult Function( String content,  bool inline)?  comment,TResult Function( List<String> sources)?  bibliography,TResult Function( String path,  GroupNode? options)?  includeGraphics,TResult Function( List<AstNode> children)?  document,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case FreeText() when freeText != null:
 return freeText(_that.text);case GroupNode() when group != null:
 return group(_that.children,_that.isOption);case OtherMacroNode() when otherMacro != null:
 return otherMacro(_that.name,_that.children);case InputNode() when input != null:
-return input(_that.path);case BlockCommentNode() when blockComment != null:
-return blockComment(_that.content);case BibliographyNode() when bibliography != null:
+return input(_that.path);case CommentNode() when comment != null:
+return comment(_that.content,_that.inline);case BibliographyNode() when bibliography != null:
 return bibliography(_that.sources);case IncludeGraphicsNode() when includeGraphics != null:
 return includeGraphics(_that.path,_that.options);case DocumentNode() when document != null:
 return document(_that.children);case _:
@@ -216,14 +216,14 @@ return document(_that.children);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String text)  freeText,required TResult Function( List<AstNode> children,  bool isOption)  group,required TResult Function( String name,  List<AstNode> children)  otherMacro,required TResult Function( String path)  input,required TResult Function( String content)  blockComment,required TResult Function( List<String> sources)  bibliography,required TResult Function( String path,  GroupNode? options)  includeGraphics,required TResult Function( List<AstNode> children)  document,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String text)  freeText,required TResult Function( List<AstNode> children,  bool isOption)  group,required TResult Function( String name,  List<AstNode> children)  otherMacro,required TResult Function( String path)  input,required TResult Function( String content,  bool inline)  comment,required TResult Function( List<String> sources)  bibliography,required TResult Function( String path,  GroupNode? options)  includeGraphics,required TResult Function( List<AstNode> children)  document,}) {final _that = this;
 switch (_that) {
 case FreeText():
 return freeText(_that.text);case GroupNode():
 return group(_that.children,_that.isOption);case OtherMacroNode():
 return otherMacro(_that.name,_that.children);case InputNode():
-return input(_that.path);case BlockCommentNode():
-return blockComment(_that.content);case BibliographyNode():
+return input(_that.path);case CommentNode():
+return comment(_that.content,_that.inline);case BibliographyNode():
 return bibliography(_that.sources);case IncludeGraphicsNode():
 return includeGraphics(_that.path,_that.options);case DocumentNode():
 return document(_that.children);}
@@ -240,14 +240,14 @@ return document(_that.children);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String text)?  freeText,TResult? Function( List<AstNode> children,  bool isOption)?  group,TResult? Function( String name,  List<AstNode> children)?  otherMacro,TResult? Function( String path)?  input,TResult? Function( String content)?  blockComment,TResult? Function( List<String> sources)?  bibliography,TResult? Function( String path,  GroupNode? options)?  includeGraphics,TResult? Function( List<AstNode> children)?  document,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String text)?  freeText,TResult? Function( List<AstNode> children,  bool isOption)?  group,TResult? Function( String name,  List<AstNode> children)?  otherMacro,TResult? Function( String path)?  input,TResult? Function( String content,  bool inline)?  comment,TResult? Function( List<String> sources)?  bibliography,TResult? Function( String path,  GroupNode? options)?  includeGraphics,TResult? Function( List<AstNode> children)?  document,}) {final _that = this;
 switch (_that) {
 case FreeText() when freeText != null:
 return freeText(_that.text);case GroupNode() when group != null:
 return group(_that.children,_that.isOption);case OtherMacroNode() when otherMacro != null:
 return otherMacro(_that.name,_that.children);case InputNode() when input != null:
-return input(_that.path);case BlockCommentNode() when blockComment != null:
-return blockComment(_that.content);case BibliographyNode() when bibliography != null:
+return input(_that.path);case CommentNode() when comment != null:
+return comment(_that.content,_that.inline);case BibliographyNode() when bibliography != null:
 return bibliography(_that.sources);case IncludeGraphicsNode() when includeGraphics != null:
 return includeGraphics(_that.path,_that.options);case DocumentNode() when document != null:
 return document(_that.children);case _:
@@ -577,11 +577,12 @@ as String,
 /// @nodoc
 @JsonSerializable()
 
-class BlockCommentNode extends AstNode {
-  const BlockCommentNode({required this.content,  String? $type}): $type = $type ?? 'blockComment',super._();
-  factory BlockCommentNode.fromJson(Map<String, dynamic> json) => _$BlockCommentNodeFromJson(json);
+class CommentNode extends AstNode {
+  const CommentNode({required this.content, required this.inline,  String? $type}): $type = $type ?? 'comment',super._();
+  factory CommentNode.fromJson(Map<String, dynamic> json) => _$CommentNodeFromJson(json);
 
  final  String content;
+ final  bool inline;
 
 @JsonKey(name: 'type')
 final String $type;
@@ -591,38 +592,38 @@ final String $type;
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$BlockCommentNodeCopyWith<BlockCommentNode> get copyWith => _$BlockCommentNodeCopyWithImpl<BlockCommentNode>(this, _$identity);
+$CommentNodeCopyWith<CommentNode> get copyWith => _$CommentNodeCopyWithImpl<CommentNode>(this, _$identity);
 
 @override
 Map<String, dynamic> toJson() {
-  return _$BlockCommentNodeToJson(this, );
+  return _$CommentNodeToJson(this, );
 }
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is BlockCommentNode&&(identical(other.content, content) || other.content == content));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is CommentNode&&(identical(other.content, content) || other.content == content)&&(identical(other.inline, inline) || other.inline == inline));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,content);
+    return Object.hash(runtimeType,content,inline);
 }
 
 @override
 String toString() {
-    return 'AstNode.blockComment(content: $content)';
+    return 'AstNode.comment(content: $content, inline: $inline)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $BlockCommentNodeCopyWith<$Res> implements $AstNodeCopyWith<$Res> {
-  factory $BlockCommentNodeCopyWith(BlockCommentNode value, $Res Function(BlockCommentNode) _then) = _$BlockCommentNodeCopyWithImpl;
+abstract mixin class $CommentNodeCopyWith<$Res> implements $AstNodeCopyWith<$Res> {
+  factory $CommentNodeCopyWith(CommentNode value, $Res Function(CommentNode) _then) = _$CommentNodeCopyWithImpl;
 @useResult
 $Res call({
- String content
+ String content, bool inline
 });
 
 
@@ -630,19 +631,20 @@ $Res call({
 
 }
 /// @nodoc
-class _$BlockCommentNodeCopyWithImpl<$Res>
-    implements $BlockCommentNodeCopyWith<$Res> {
-  _$BlockCommentNodeCopyWithImpl(this._self, this._then);
+class _$CommentNodeCopyWithImpl<$Res>
+    implements $CommentNodeCopyWith<$Res> {
+  _$CommentNodeCopyWithImpl(this._self, this._then);
 
-  final BlockCommentNode _self;
-  final $Res Function(BlockCommentNode) _then;
+  final CommentNode _self;
+  final $Res Function(CommentNode) _then;
 
 /// Create a copy of AstNode
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? content = null,}) {
-  return _then(BlockCommentNode(
+@pragma('vm:prefer-inline') $Res call({Object? content = null,Object? inline = null,}) {
+  return _then(CommentNode(
 content: null == content ? _self.content : content // ignore: cast_nullable_to_non_nullable
-as String,
+as String,inline: null == inline ? _self.inline : inline // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 
