@@ -1,23 +1,12 @@
-enum TokenType {
-  macro,
-  blockCommentBegin,
-  blockCommentEnd,
-  groupBegin,
-  groupEnd,
-  optionBegin,
-  optionEnd,
-  other,
-  eof,
-}
+/// From source -> Tokens
+library;
 
-class Token {
-  final TokenType type;
-  final String value;
+import 'types/token.dart';
 
-  Token(this.type, this.value);
-
-  @override
-  String toString() => 'Token(type: $type, value: "$value")';
+/// Tokenize [source] latex into [List<Token>].
+List<Token> tokenize(String source) {
+  final tknz = Tokenizer(source);
+  return tknz.tokenize();
 }
 
 class Tokenizer {

@@ -1,7 +1,10 @@
 /// From tokens -> AST
 library;
 
-import 'tokenizer.dart';
+import 'types/token.dart';
+import 'types/ast.dart';
+
+import 'tokenize.dart';
 
 class DocumentParser {
   final List<Token> tokens;
@@ -224,7 +227,7 @@ class DocumentParser {
 }
 
 DocumentNode parseDocument({required String source}) {
-  final tokens = Tokenizer(source).tokenize();
+  final tokens = tokenize(source);
   final parser = DocumentParser(tokens);
   return parser.parse();
 }
