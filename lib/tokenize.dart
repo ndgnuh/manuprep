@@ -15,19 +15,22 @@ class Tokenizer {
 
   Tokenizer(this.input);
 
+  int tell() => _position;
+
   List<Token> tokenize() {
     final tokens = <Token>[];
     while (notEof) {
       final token = nextToken();
       final lastToken = tokens.isNotEmpty
           ? tokens.last
-          : Token(TokenType.eof, '');
+          : Token(start: _position, type: TokenType.eof, value: '');
 
       if (token.type == TokenType.other && lastToken.type == TokenType.other) {
         // Merge consecutive 'other' tokens
         final mergedToken = Token(
-          TokenType.other,
-          lastToken.value + token.value,
+          start: lastToken.start,
+          type: TokenType.other,
+          value: lastToken.value + token.value,
         );
         tokens.last = mergedToken;
       } else {
@@ -35,7 +38,7 @@ class Tokenizer {
       }
     }
 
-    tokens.add(Token(TokenType.eof, ''));
+    tokens.add(Token(type: TokenType.eof, value: '', start: _position));
 
     _position = 0;
 
@@ -60,19 +63,24 @@ class Tokenizer {
   String get rest => input.substring(_position);
 
   Token nextToken() {
+    final initPosition = tell();
     final c = advance();
     final beginComment = "begin{comment}";
     final endComment = "end{comment}";
     switch (c) {
       case '':
-        return Token(TokenType.eof, '');
+        return Token(type: TokenType.eof, value: '', start: _position);
       case r'\':
         if (rest.startsWith(beginComment)) {
           // Consume 'begin{comment}'
           for (int i = 0; i < beginComment.length; i++) {
             advance();
           }
-          return Token(TokenType.blockCommentBegin, r'\begin{comment}');
+          return Token(
+            start: initPosition,
+            type: TokenType.blockCommentBegin,
+            value: r'\begin{comment}',
+          );
         }
 
         if (rest.startsWith(endComment)) {
@@ -80,7 +88,11 @@ class Tokenizer {
           for (int i = 0; i < endComment.length; i++) {
             advance();
           }
-          return Token(TokenType.blockCommentEnd, r'\end{comment}');
+          return Token(
+            start: initPosition,
+            type: TokenType.blockCommentEnd,
+            value: r'\end{comment}',
+          );
         }
 
         final buffer = StringBuffer()..write(c);
@@ -88,15 +100,23 @@ class Tokenizer {
           buffer.write(advance());
         }
         final command = buffer.toString();
-        return Token(TokenType.macro, command);
+        return Token(
+          start: initPosition,
+          type: TokenType.macro,
+          value: command,
+        );
       case '{':
-        return Token(TokenType.groupBegin, c);
+        return Token(start: initPosition, type: TokenType.groupBegin, value: c);
       case '}':
-        return Token(TokenType.groupEnd, c);
+        return Token(start: initPosition, type: TokenType.groupEnd, value: c);
       case '[':
-        return Token(TokenType.optionBegin, c);
+        return Token(
+          start: initPosition,
+          type: TokenType.optionBegin,
+          value: c,
+        );
       case ']':
-        return Token(TokenType.optionEnd, c);
+        return Token(start: initPosition, type: TokenType.optionEnd, value: c);
       default:
         StringBuffer buffer = StringBuffer()..write(c);
         while (notEof) {
@@ -110,7 +130,11 @@ class Tokenizer {
           }
           buffer.write(advance());
         }
-        return Token(TokenType.other, buffer.toString());
+        return Token(
+          start: initPosition,
+          type: TokenType.other,
+          value: buffer.toString(),
+        );
     }
   }
 }
