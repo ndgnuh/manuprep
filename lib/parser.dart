@@ -1,3 +1,6 @@
+/// From tokens -> AST
+library;
+
 import 'tokenizer.dart';
 
 sealed class Node {
@@ -97,24 +100,17 @@ class OtherMacroNode extends MacroNode {
 }
 
 class InputNode extends OtherMacroNode {
-  final List<PathNode> paths;
-  InputNode({required this.paths}) : super(name: r'\input');
+  final PathNode path;
+  InputNode({required this.path, super.parent}) : super(name: r'\input');
 
   @override
-  List<Node> get children => paths;
+  List<Node> get children => [path];
 
   @override
-  String compose() {
-    final parts = [
-      r'\input{',
-      ...paths.map((e) => e.compose()),
-      '}',
-    ];
-    return parts.join();
-  }
+  String compose() => '\\input{${path.compose()}}';
 
   @override
-  String toString() => 'InputNode(path: $paths)';
+  String toString() => 'InputNode(path: $path)';
 }
 
 class PathNode extends Node {
@@ -270,13 +266,12 @@ class DocumentParser {
   InputNode parseInputNode({Node? parent}) {
     // Expecting \input{path}
     expect(TokenType.groupBegin);
-    final pathNode = parseBlock(optional: false);
-    final blockContent = pathNode.children.map((e) => e.compose()).join();
-    final paths = blockContent
-        .split(',')
-        .map((path) => PathNode(path: path, parent: parent))
-        .toList();
-    return InputNode(paths: paths);
+    final block = parseBlock(optional: false);
+    final path = block.children.map((e) => e.compose()).join().trim();
+    return InputNode(
+      path: PathNode(path: path),
+      parent: parent,
+    );
   }
 
   Node parseFreeText({Node? parent}) {
