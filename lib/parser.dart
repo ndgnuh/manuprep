@@ -11,9 +11,59 @@ class DocumentParser {
   final List<Token> tokens;
   DocumentParser(this.tokens);
 
+  /// Position of current token
   int position = 0;
+
   bool get eof => position >= tokens.length;
   bool get notEof => position < tokens.length;
+
+  /// The entrypoint for parsing
+  /// loop over token list and just parse from there
+  DocumentNode parse() {
+    position = 0;
+    final children = <AstNode>[];
+    while (notEof) {
+      final token = advance();
+      if (token.type == TokenType.eof) {
+        break;
+      }
+      final parsed = parseFromToken(token);
+
+      children.add(parsed);
+    }
+    return DocumentNode(children: children);
+  }
+
+  /// The main hub of token handling
+  /// Route each token type to appropriate parsing function
+  AstNode parseFromToken(Token token, {AstNode? parent}) {
+    switch (token.type) {
+      case TokenType.macro:
+        return switch (token.value) {
+          r"\bibliography" => parseBibliographyCommand(parent: parent),
+          r"\includegraphics" => parseIncludeGraphicsCommand(parent: parent),
+          r"\input" => parseInputNode(parent: parent),
+          r"\usepackage" => parseOtherMacro(
+            name: token.value,
+            argSpec: "om",
+            parent: parent,
+          ),
+          _ => parseOtherMacro(name: token.value, parent: parent),
+        };
+      case TokenType.groupBegin:
+        return parseBlock(optional: false, parent: parent);
+      case TokenType.optionBegin:
+        return parseBlock(optional: true, parent: parent);
+      case TokenType.other:
+        return FreeText(token.value, parent: parent);
+      case TokenType.eof:
+        throw Exception('Unexpected end of file');
+      case TokenType.blockCommentBegin:
+        return parseCommentEnvironment(parent: parent);
+      default:
+        throw unexpect(token);
+    }
+  }
 
   Token peek() {
     if (eof) {
@@ -31,6 +81,8 @@ class DocumentParser {
     return token;
   }
 
+  /// Expect a token at currnet position
+  /// consume at return that token, throws if unmet
   Token expect(TokenType type) {
     final token = advance();
     if (token.type != type) {
@@ -52,7 +104,7 @@ class DocumentParser {
         .join()
         .trim();
     return InputNode(
-      path: PathNode(path: path),
+      path: path,
       parent: parent,
     );
   }
@@ -112,10 +164,7 @@ class DocumentParser {
     final sources = [
       for (final child in children) texCompose(astNode: child),
     ].join();
-    final bibSources = sources
-        .split(',')
-        .map((path) => PathNode(path: path))
-        .toList();
+    final bibSources = sources.split(',').toList();
     return BibliographyNode(sources: bibSources, parent: parent);
   }
 
@@ -138,7 +187,7 @@ class DocumentParser {
         .map((e) => texCompose(astNode: e))
         .join();
     return IncludeGraphicsNode(
-      path: PathNode(path: blockContent),
+      path: blockContent,
       options: options,
       parent: parent,
     );
@@ -187,50 +236,6 @@ class DocumentParser {
     }
 
     return OtherMacroNode(name: name, children: args, parent: parent);
-  }
-
-  AstNode parseFromToken(Token token, {AstNode? parent}) {
-    switch (token.type) {
-      case TokenType.macro:
-        return switch (token.value) {
-          r"\bibliography" => parseBibliographyCommand(parent: parent),
-          r"\includegraphics" => parseIncludeGraphicsCommand(parent: parent),
-          r"\input" => parseInputNode(parent: parent),
-          r"\usepackage" => parseOtherMacro(
-            name: token.value,
-            argSpec: "om",
-            parent: parent,
-          ),
-          _ => parseOtherMacro(name: token.value, parent: parent),
-        };
-      case TokenType.groupBegin:
-        return parseBlock(optional: false, parent: parent);
-      case TokenType.optionBegin:
-        return parseBlock(optional: true, parent: parent);
-      case TokenType.other:
-        return FreeText(token.value, parent: parent);
-      case TokenType.eof:
-        throw Exception('Unexpected end of file');
-      case TokenType.blockCommentBegin:
-        return parseCommentEnvironment(parent: parent);
-      default:
-        throw unexpect(token);
-    }
-  }
-
-  DocumentNode parse() {
-    position = 0;
-    final children = <AstNode>[];
-    while (notEof) {
-      final token = advance();
-      if (token.type == TokenType.eof) {
-        break;
-      }
-      final parsed = parseFromToken(token);
-
-      children.add(parsed);
-    }
-    return DocumentNode(children: children);
   }
 }
 

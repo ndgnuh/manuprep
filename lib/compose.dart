@@ -19,8 +19,6 @@ void texComposeVisit({
   switch (node) {
     case FreeText(:final text):
       io.write(text);
-    case PathNode(:final path):
-      io.write(path);
     case GroupNode(:final children):
       io.write('{');
       visitAll(children);
@@ -36,7 +34,7 @@ void texComposeVisit({
     // InputNode extends OtherMacroNode, so it must come first
     case InputNode(:final path):
       io.write(r'\input{');
-      texComposeVisit(io: io, node: path);
+      io.write(path);
       io.write('}');
     case OtherMacroNode(:final name, :final children):
       io.write(name);
@@ -45,14 +43,14 @@ void texComposeVisit({
       io.write(r'\bibliography{');
       for (final (i, source) in sources.indexed) {
         if (i > 0) io.write(',');
-        texComposeVisit(io: io, node: source);
+        io.write(source);
       }
       io.write('}');
     case IncludeGraphicsNode(:final path, :final options):
       io.write(r'\includegraphics');
       if (options != null) texComposeVisit(io: io, node: options);
       io.write('{');
-      texComposeVisit(io: io, node: path);
+      io.write(path);
       io.write('}');
     case DocumentNode(:final children):
       visitAll(children);

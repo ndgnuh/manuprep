@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+
 import 'compose.dart';
 import 'parser.dart';
 import 'types/ast.dart';
@@ -44,13 +45,13 @@ class WorkingContext {
 }
 
 class ResourceMap {
-  final PathNode node;
+  final String path;
   final String inputDirectory;
   final String inputPath;
   final String outputPath;
 
   const ResourceMap({
-    required this.node,
+    required this.path,
     required this.inputDirectory,
     required this.inputPath,
     required this.outputPath,
@@ -64,7 +65,7 @@ class ResourceMap {
       '${baseName}_$index$extension',
     );
     return ResourceMap(
-      node: node,
+      path: path,
       inputDirectory: inputDirectory,
       inputPath: inputPath,
       outputPath: newOutputPath,
@@ -95,7 +96,7 @@ DocumentNode prepareFromContent({
   /// Add resource to the mapping and return the created [ResourceMap].
   /// This does not copy the file, it only creates the mapping.
   /// It also does not resolve file path conflicts.
-  ResourceMap addMapping(PathNode node, String inputResource) {
+  ResourceMap addMapping(String node, String inputResource) {
     final inputPath = findFileWithBaseName(
       sourceDirectory: sourceDirectory,
       sourceName: inputResource,

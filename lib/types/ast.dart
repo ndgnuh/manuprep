@@ -1,4 +1,6 @@
 /// Hold document nodes with meaningful contents (that we care about)
+/// All the [path] attribute in this data type is the resource path
+/// relative to the root directory
 library;
 
 /// Node can have content only (no chidren)
@@ -87,32 +89,11 @@ class OtherMacroNode extends MacroNode {
 }
 
 class InputNode extends OtherMacroNode {
-  final PathNode path;
+  final String path;
   InputNode({required this.path, super.parent}) : super(name: r'\input');
 
   @override
-  List<AstNode> get children => [path];
-
-  @override
   String toString() => 'InputNode(path: $path)';
-}
-
-class PathNode extends AstNode {
-  String path;
-  PathNode({required this.path, super.parent});
-
-  void replacePath(String newPath) {
-    path = newPath;
-  }
-
-  @override
-  String toString() => 'PathNode(path: $path)';
-
-  @override
-  Map<String, Object> toJson() => {
-    'type': runtimeType.toString(),
-    'path': path,
-  };
 }
 
 class BlockCommentNode extends AstNode {
@@ -130,12 +111,9 @@ class BlockCommentNode extends AstNode {
 }
 
 class BibliographyNode extends MacroNode {
-  final List<PathNode> sources;
+  final List<String> sources;
   BibliographyNode({required this.sources, super.parent})
     : super(name: r'\bibliography');
-
-  @override
-  List<AstNode> get children => sources;
 
   @override
   String toString() => 'BibliographyNode(sources: $sources)';
@@ -148,19 +126,13 @@ class BibliographyNode extends MacroNode {
 }
 
 class IncludeGraphicsNode extends MacroNode {
-  final PathNode path;
+  final String path;
   final AstNode? options;
   IncludeGraphicsNode({required this.path, this.options, super.parent})
     : super(name: r'\includegraphics');
 
-  @override
-  List<AstNode> get children => [
-    if (options != null) options!,
-    path,
-  ];
-
   IncludeGraphicsNode copyWith({
-    PathNode? path,
+    String? path,
     AstNode? options,
   }) => IncludeGraphicsNode(
     path: path ?? this.path,
@@ -184,7 +156,7 @@ class DocumentNode extends AstNode {
 
 AstNodeChildrenType getChildrenType<T extends AstNode>(T node) {
   return switch (node) {
-    FreeText() || PathNode() || BlockCommentNode() => AstNodeChildrenType.none,
+    FreeText() || BlockCommentNode() => AstNodeChildrenType.none,
     // InputNode extends OtherMacroNode, so it must come first
     InputNode() || IncludeGraphicsNode() => AstNodeChildrenType.single,
     GroupNode() ||
